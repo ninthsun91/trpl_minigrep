@@ -9,16 +9,20 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn build(args: &[String]) -> Result<Config, String> {
-        if args.len() != 3 {
-            let message = format!(
-                "2 arguments should be given but received {}",
-                args.len() - 1
-            );
-            return Err(message);
-        }
-        let query = args[1].clone();
-        let file_path = args[2].clone();
+    pub fn build(mut args: impl Iterator<Item = String>) -> Result<Config, &'static str> {
+        // Skip the first argument which is the name of the program
+        args.next();
+
+        let query = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Query string is missing"),
+        };
+
+        let file_path = match args.next() {
+            Some(arg) => arg,
+            None => return Err("File path is missing"),
+        };
+
         let ignore_case = env::var("IGNORE_CASE").is_ok();
 
         Ok(Config {
